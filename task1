@@ -1,0 +1,247 @@
+using System;
+
+class Rectangle
+{
+    // Захищені поля
+    protected int a, b;
+    protected int c;
+
+    // Конструктор
+    public Rectangle(int a, int b, int color)
+    {
+        this.a = a;
+        this.b = b;
+        this.c = color;
+    }
+
+    // Властивості
+    public int A
+    {
+        get { return a; }
+        set { a = value; }
+    }
+
+    public int B
+    {
+        get { return b; }
+        set { b = value; }
+    }
+
+    public int Color
+    {
+        get { return c; }
+    }
+
+    // Індексатор
+    public object this[int index]
+    {
+        get
+        {
+            switch (index)
+            {
+                case 0: return a;
+                case 1: return b;
+                case 2: return c;
+                default: return "Помилка: неправильний індекс";
+            }
+        }
+        set
+        {
+            switch (index)
+            {
+                case 0:
+                    a = Convert.ToInt32(value);
+                    break;
+                case 1:
+                    b = Convert.ToInt32(value);
+                    break;
+                case 2:
+                    c = Convert.ToInt32(value);
+                    break;
+                default:
+                    Console.WriteLine("Помилка: неправильний індекс");
+                    break;
+            }
+        }
+    }
+
+    // Перевантаження оператора ++
+    public static Rectangle operator ++(Rectangle r)
+    {
+        r.a++;
+        r.b++;
+        return r;
+    }
+
+    // Перевантаження оператора --
+    public static Rectangle operator --(Rectangle r)
+    {
+        r.a--;
+        r.b--;
+        return r;
+    }
+
+    // Перевантаження true
+    public static bool operator true(Rectangle r)
+    {
+        return r.a == r.b;
+    }
+
+    // Перевантаження false
+    public static bool operator false(Rectangle r)
+    {
+        return r.a != r.b;
+    }
+
+    // Перевантаження оператора *
+    public static Rectangle operator *(Rectangle r, int scalar)
+    {
+        return new Rectangle(r.a * scalar, r.b * scalar, r.c);
+    }
+
+    // Явне перетворення Rectangle в string
+    public static explicit operator string(Rectangle r)
+    {
+        return $"a={r.a},b={r.b},колір={r.c}";
+    }
+
+    // Явне перетворення string в Rectangle
+    public static explicit operator Rectangle(string str)
+    {
+        if (string.IsNullOrEmpty(str))
+            throw new ArgumentException("Input string cannot be null or empty");
+
+        string[] parts = str.Split(',');
+        if (parts.Length != 3)
+            throw new ArgumentException("Input string must have exactly 3 parts separated by commas");
+
+        // Парсинг a
+        string[] aParts = parts[0].Split('=');
+        if (aParts.Length != 2 || !int.TryParse(aParts[1], out int a))
+            throw new ArgumentException("Invalid format for 'a' value");
+
+        // Парсинг b
+        string[] bParts = parts[1].Split('=');
+        if (bParts.Length != 2 || !int.TryParse(bParts[1], out int b))
+            throw new ArgumentException("Invalid format for 'b' value");
+
+        // Парсинг color
+        string[] colorParts = parts[2].Split('=');
+        if (colorParts.Length != 2 || !int.TryParse(colorParts[1], out int color))
+            throw new ArgumentException("Invalid format for 'color' value");
+
+        return new Rectangle(a, b, color);
+    }
+
+    // Методи з лабораторної роботи №3
+    public void PrintInfo()
+    {
+        Console.WriteLine($"Прямокутник: a = {a}, b = {b}, колiр = {c}");
+    }
+
+    public int GetPerimeter()
+    {
+        return 2 * (a + b);
+    }
+
+    public int GetArea()
+    {
+        return a * b;
+    }
+
+    public bool IsSquare()
+    {
+        return a == b;
+    }
+}
+
+class Program2
+{
+    // Оригінальний метод Main2 з лабораторної роботи №3
+    static void Main2()
+    {
+        Rectangle[] rectangles =
+        {
+            new Rectangle(5, 5, 1),
+            new Rectangle(4, 6, 2),
+            new Rectangle(7, 7, 3),
+            new Rectangle(8, 10, 4)
+        };
+
+        int squareCount = 0;
+
+        foreach (var rect in rectangles)
+        {
+            rect.PrintInfo();
+            Console.WriteLine($"Периметр: {rect.GetPerimeter()}");
+            Console.WriteLine($"Площа: {rect.GetArea()}");
+            if (rect.IsSquare())
+            {
+                Console.WriteLine("Це квадрат!");
+                squareCount++;
+            }
+            Console.WriteLine();
+        }
+
+        Console.WriteLine($"Кiлькiсть квадратiв: {squareCount}");
+    }
+
+    // Новий метод Main для тестування нових функцій
+    static void Main()
+    {
+        try
+        {
+            // Створення об'єкта
+            Rectangle rect = new Rectangle(5, 5, 1);
+
+            // Тестування індексатора
+            Console.WriteLine("Тестування індексатора:");
+            Console.WriteLine($"a: {rect[0]}"); // 5
+            Console.WriteLine($"b: {rect[1]}"); // 5
+            Console.WriteLine($"колір: {rect[2]}"); // 1
+            Console.WriteLine($"Неправильний індекс: {rect[3]}"); // Помилка: неправильний індекс
+
+            // Тестування ++
+            Console.WriteLine("\nТестування оператора ++:");
+            rect++;
+            Console.WriteLine($"a після ++: {rect[0]}"); // 6
+            Console.WriteLine($"b після ++: {rect[1]}"); // 6
+
+            // Тестування true/false
+            Console.WriteLine("\nТестування операторів true/false:");
+            if (rect)
+                Console.WriteLine("Це квадрат");
+            else
+                Console.WriteLine("Це не квадрат");
+
+            // Тестування *
+            Console.WriteLine("\nТестування оператора *:");
+            rect = rect * 2;
+            Console.WriteLine($"a після множення на 2: {rect[0]}"); // 12
+            Console.WriteLine($"b після множення на 2: {rect[1]}"); // 12
+
+            // Тестування перетворення в string
+            Console.WriteLine("\nТестування перетворення в string:");
+            string rectStr = (string)rect;
+            Console.WriteLine(rectStr); // a=12,b=12,колір=1
+
+            // Тестування перетворення зі string
+            Console.WriteLine("\nТестування перетворення зі string:");
+            Rectangle rect2 = (Rectangle)"a=3,b=4,колір=2";
+            Console.WriteLine($"a: {rect2[0]}"); // 3
+            Console.WriteLine($"b: {rect2[1]}"); // 4
+            Console.WriteLine($"колір: {rect2[2]}"); // 2
+
+            // Тестування методів з лабораторної роботи №3
+            Console.WriteLine("\nТестування методів з лабораторної роботи №3:");
+            rect2.PrintInfo();
+            Console.WriteLine($"Периметр: {rect2.GetPerimeter()}");
+            Console.WriteLine($"Площа: {rect2.GetArea()}");
+            Console.WriteLine($"Це квадрат? {rect2.IsSquare()}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка: {ex.Message}");
+        }
+    }
+}

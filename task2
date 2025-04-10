@@ -1,0 +1,596 @@
+using System;
+
+class VectorShort
+{
+    protected short[] ShortArray;
+    protected uint n;
+    protected uint codeError;
+    protected static uint num_v;
+
+    public VectorShort()
+    {
+        n = 1;
+        ShortArray = new short[n];
+        ShortArray[0] = 0;
+        codeError = 0;
+        num_v++;
+    }
+
+    public VectorShort(uint size)
+    {
+        if (size == 0) throw new ArgumentException("Розмір вектора не може бути 0");
+        n = size;
+        ShortArray = new short[n];
+        for (int i = 0; i < n; i++)
+            ShortArray[i] = 0;
+        codeError = 0;
+        num_v++;
+    }
+
+    public VectorShort(uint size, short initValue)
+    {
+        if (size == 0) throw new ArgumentException("Розмір вектора не може бути 0");
+        n = size;
+        ShortArray = new short[n];
+        for (int i = 0; i < n; i++)
+            ShortArray[i] = initValue;
+        codeError = 0;
+        num_v++;
+    }
+
+    ~VectorShort()
+    {
+        Console.WriteLine($"Вектор розміром {n} знищений.");
+        num_v--;
+    }
+
+    public void Input()
+    {
+        Console.WriteLine($"Введіть {n} елементів вектора:");
+        for (int i = 0; i < n; i++)
+        {
+            Console.Write($"Елемент {i}: ");
+            if (short.TryParse(Console.ReadLine(), out short value))
+                ShortArray[i] = value;
+            else
+            {
+                Console.WriteLine("Неправильне значення, встановлено 0.");
+                ShortArray[i] = 0;
+            }
+        }
+    }
+
+    public void Output()
+    {
+        Console.Write("Вектор: ");
+        for (int i = 0; i < n; i++)
+            Console.Write($"{ShortArray[i]} ");
+        Console.WriteLine();
+    }
+
+    public void AssignValue(short value)
+    {
+        for (int i = 0; i < n; i++)
+            ShortArray[i] = value;
+    }
+
+    public static uint GetVectorCount()
+    {
+        return num_v;
+    }
+
+    public uint Size
+    {
+        get { return n; }
+    }
+
+    public uint CodeError
+    {
+        get { return codeError; }
+        set { codeError = value; }
+    }
+
+    public short this[int index]
+    {
+        get
+        {
+            if (index < 0 || index >= n)
+            {
+                codeError = 10;
+                return 0;
+            }
+            return ShortArray[index];
+        }
+        set
+        {
+            if (index < 0 || index >= n)
+            {
+                codeError = 10;
+            }
+            else
+            {
+                ShortArray[index] = value;
+            }
+        }
+    }
+
+    public static VectorShort operator ++(VectorShort v)
+    {
+        for (int i = 0; i < v.n; i++)
+            v.ShortArray[i]++;
+        return v;
+    }
+
+    public static VectorShort operator --(VectorShort v)
+    {
+        for (int i = 0; i < v.n; i++)
+            v.ShortArray[i]--;
+        return v;
+    }
+
+    public static bool operator true(VectorShort v)
+    {
+        if (v.n == 0) return false;
+        for (int i = 0; i < v.n; i++)
+            if (v.ShortArray[i] == 0) return false;
+        return true;
+    }
+
+    public static bool operator false(VectorShort v)
+    {
+        if (v.n == 0) return true;
+        for (int i = 0; i < v.n; i++)
+            if (v.ShortArray[i] == 0) return true;
+        return false;
+    }
+
+    public static bool operator !(VectorShort v)
+    {
+        return v.n != 0;
+    }
+
+    public static VectorShort operator ~(VectorShort v)
+    {
+        VectorShort result = new VectorShort(v.n);
+        for (int i = 0; i < v.n; i++)
+            result.ShortArray[i] = (short)~v.ShortArray[i];
+        return result;
+    }
+
+    // Допоміжні методи для узагальнення
+    private static VectorShort ApplyBinaryOperation(VectorShort v1, VectorShort v2, Func<short, short, short> operation)
+    {
+        uint maxSize = Math.Max(v1.n, v2.n);
+        uint minSize = Math.Min(v1.n, v2.n);
+        VectorShort result = new VectorShort(maxSize);
+        for (int i = 0; i < minSize; i++)
+            result.ShortArray[i] = operation(v1.ShortArray[i], v2.ShortArray[i]);
+        for (int i = (int)minSize; i < maxSize; i++)
+            result.ShortArray[i] = (v1.n > v2.n) ? v1.ShortArray[i] : v2.ShortArray[i];
+        return result;
+    }
+
+    private static VectorShort ApplyScalarOperation(VectorShort v, short scalar, Func<short, short, short> operation)
+    {
+        VectorShort result = new VectorShort(v.n);
+        for (int i = 0; i < v.n; i++)
+            result.ShortArray[i] = operation(v.ShortArray[i], scalar);
+        return result;
+    }
+
+    // Бінарні операції
+    public static VectorShort operator +(VectorShort v1, VectorShort v2)
+    {
+        return ApplyBinaryOperation(v1, v2, (a, b) => (short)(a + b));
+    }
+
+    public static VectorShort operator +(VectorShort v, short scalar)
+    {
+        return ApplyScalarOperation(v, scalar, (a, b) => (short)(a + b));
+    }
+
+    public static VectorShort operator -(VectorShort v1, VectorShort v2)
+    {
+        uint maxSize = Math.Max(v1.n, v2.n);
+        uint minSize = Math.Min(v1.n, v2.n);
+        VectorShort result = new VectorShort(maxSize);
+        for (int i = 0; i < minSize; i++)
+            result.ShortArray[i] = (short)(v1.ShortArray[i] - v2.ShortArray[i]);
+        for (int i = (int)minSize; i < maxSize; i++)
+            result.ShortArray[i] = (v1.n > v2.n) ? v1.ShortArray[i] : (short)(-v2.ShortArray[i]);
+        return result;
+    }
+
+    public static VectorShort operator -(VectorShort v, short scalar)
+    {
+        return ApplyScalarOperation(v, scalar, (a, b) => (short)(a - b));
+    }
+
+    public static VectorShort operator *(VectorShort v1, VectorShort v2)
+    {
+        return ApplyBinaryOperation(v1, v2, (a, b) => (short)(a * b));
+    }
+
+    public static VectorShort operator *(VectorShort v, short scalar)
+    {
+        return ApplyScalarOperation(v, scalar, (a, b) => (short)(a * b));
+    }
+
+    public static VectorShort operator /(VectorShort v1, VectorShort v2)
+    {
+        uint maxSize = Math.Max(v1.n, v2.n);
+        uint minSize = Math.Min(v1.n, v2.n);
+        VectorShort result = new VectorShort(maxSize);
+        for (int i = 0; i < minSize; i++)
+        {
+            if (v2.ShortArray[i] == 0)
+                throw new DivideByZeroException($"Ділення на нуль на індексі {i}");
+            result.ShortArray[i] = (short)(v1.ShortArray[i] / v2.ShortArray[i]);
+        }
+        for (int i = (int)minSize; i < maxSize; i++)
+            result.ShortArray[i] = (v1.n > v2.n) ? v1.ShortArray[i] : (short)(0);
+        return result;
+    }
+
+    public static VectorShort operator /(VectorShort v, ushort scalar)
+    {
+        if (scalar == 0)
+            throw new DivideByZeroException("Ділення на нуль");
+        VectorShort result = new VectorShort(v.n);
+        for (int i = 0; i < v.n; i++)
+            result.ShortArray[i] = (short)(v.ShortArray[i] / scalar);
+        return result;
+    }
+
+    public static VectorShort operator %(VectorShort v1, VectorShort v2)
+    {
+        uint maxSize = Math.Max(v1.n, v2.n);
+        uint minSize = Math.Min(v1.n, v2.n);
+        VectorShort result = new VectorShort(maxSize);
+        for (int i = 0; i < minSize; i++)
+        {
+            if (v2.ShortArray[i] == 0)
+                throw new DivideByZeroException($"Ділення на нуль на індексі {i}");
+            result.ShortArray[i] = (short)(v1.ShortArray[i] % v2.ShortArray[i]);
+        }
+        for (int i = (int)minSize; i < maxSize; i++)
+            result.ShortArray[i] = (v1.n > v2.n) ? v1.ShortArray[i] : (short)(0);
+        return result;
+    }
+
+    public static VectorShort operator %(VectorShort v, short scalar)
+    {
+        if (scalar == 0)
+            throw new DivideByZeroException("Ділення на нуль");
+        return ApplyScalarOperation(v, scalar, (a, b) => (short)(a % b));
+    }
+
+    public static VectorShort operator |(VectorShort v1, VectorShort v2)
+    {
+        return ApplyBinaryOperation(v1, v2, (a, b) => (short)(a | b));
+    }
+
+    public static VectorShort operator |(VectorShort v, short scalar)
+    {
+        return ApplyScalarOperation(v, scalar, (a, b) => (short)(a | b));
+    }
+
+    public static VectorShort operator ^(VectorShort v1, VectorShort v2)
+    {
+        return ApplyBinaryOperation(v1, v2, (a, b) => (short)(a ^ b));
+    }
+
+    public static VectorShort operator ^(VectorShort v, short scalar)
+    {
+        return ApplyScalarOperation(v, scalar, (a, b) => (short)(a ^ b));
+    }
+
+    public static VectorShort operator &(VectorShort v1, VectorShort v2)
+    {
+        return ApplyBinaryOperation(v1, v2, (a, b) => (short)(a & b));
+    }
+
+    public static VectorShort operator &(VectorShort v, short scalar)
+    {
+        return ApplyScalarOperation(v, scalar, (a, b) => (short)(a & b));
+    }
+
+    public static VectorShort operator >>(VectorShort v1, VectorShort v2)
+    {
+        uint maxSize = Math.Max(v1.n, v2.n);
+        uint minSize = Math.Min(v1.n, v2.n);
+        VectorShort result = new VectorShort(maxSize);
+        for (int i = 0; i < minSize; i++)
+        {
+            if (v2.ShortArray[i] < 0)
+                throw new ArgumentException($"Зсув на від'ємну величину недопустимий (індекс {i})");
+            result.ShortArray[i] = (short)(v1.ShortArray[i] >> v2.ShortArray[i]);
+        }
+        for (int i = (int)minSize; i < maxSize; i++)
+            result.ShortArray[i] = (v1.n > v2.n) ? v1.ShortArray[i] : (short)(0);
+        return result;
+    }
+
+    public static VectorShort operator >>(VectorShort v, ushort scalar)
+    {
+        VectorShort result = new VectorShort(v.n);
+        for (int i = 0; i < v.n; i++)
+            result.ShortArray[i] = (short)(v.ShortArray[i] >> scalar);
+        return result;
+    }
+
+    public static VectorShort operator <<(VectorShort v1, VectorShort v2)
+    {
+        uint maxSize = Math.Max(v1.n, v2.n);
+        uint minSize = Math.Min(v1.n, v2.n);
+        VectorShort result = new VectorShort(maxSize);
+        for (int i = 0; i < minSize; i++)
+        {
+            if (v2.ShortArray[i] < 0)
+                throw new ArgumentException($"Зсув на від'ємну величину недопустимий (індекс {i})");
+            result.ShortArray[i] = (short)(v1.ShortArray[i] << v2.ShortArray[i]);
+        }
+        for (int i = (int)minSize; i < maxSize; i++)
+            result.ShortArray[i] = (v1.n > v2.n) ? v1.ShortArray[i] : (short)(0);
+        return result;
+    }
+
+    public static VectorShort operator <<(VectorShort v, ushort scalar)
+    {
+        VectorShort result = new VectorShort(v.n);
+        for (int i = 0; i < v.n; i++)
+            result.ShortArray[i] = (short)(v.ShortArray[i] << scalar);
+        return result;
+    }
+
+    public static bool operator ==(VectorShort v1, VectorShort v2)
+    {
+        if (ReferenceEquals(v1, v2))
+            return true;
+        if (ReferenceEquals(v1, null) || ReferenceEquals(v2, null))
+            return false;
+        if (v1.n != v2.n) return false;
+        for (int i = 0; i < v1.n; i++)
+            if (v1.ShortArray[i] != v2.ShortArray[i])
+                return false;
+        return true;
+    }
+
+    public static bool operator !=(VectorShort v1, VectorShort v2)
+    {
+        return !(v1 == v2);
+    }
+
+    public static bool operator >(VectorShort v1, VectorShort v2)
+    {
+        uint minSize = Math.Min(v1.n, v2.n);
+        for (int i = 0; i < minSize; i++)
+            if (v1.ShortArray[i] <= v2.ShortArray[i])
+                return false;
+        return v1.n >= v2.n;
+    }
+
+    public static bool operator >=(VectorShort v1, VectorShort v2)
+    {
+        uint minSize = Math.Min(v1.n, v2.n);
+        for (int i = 0; i < minSize; i++)
+            if (v1.ShortArray[i] < v2.ShortArray[i])
+                return false;
+        return v1.n >= v2.n;
+    }
+
+    public static bool operator <(VectorShort v1, VectorShort v2)
+    {
+        return !(v1 >= v2);
+    }
+
+    public static bool operator <=(VectorShort v1, VectorShort v2)
+    {
+        return !(v1 > v2);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj == null || GetType() != obj.GetType())
+            return false;
+
+        VectorShort other = (VectorShort)obj;
+        if (n != other.n)
+            return false;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (ShortArray[i] != other.ShortArray[i])
+                return false;
+        }
+        return true;
+    }
+
+    public override int GetHashCode()
+    {
+        int hash = 17;
+        hash = hash * 23 + n.GetHashCode();
+        foreach (short value in ShortArray)
+        {
+            hash = hash * 23 + value.GetHashCode();
+        }
+        return hash;
+    }
+}
+
+class Program
+{
+    static void Main4()
+    {
+        try
+        {
+            // Тестування конструкторів
+            Console.WriteLine("Тестування конструкторів:");
+            VectorShort v1 = new VectorShort(); // Конструктор без параметрів
+            Console.WriteLine("Вектор v1 (без параметрів):");
+            v1.Output();
+
+            VectorShort v2 = new VectorShort(3); // Конструктор з розміром
+            Console.WriteLine("Вектор v2 (розмір 3):");
+            v2.Output();
+
+            VectorShort v3 = new VectorShort(3, 5); // Конструктор з розміром і значенням
+            Console.WriteLine("Вектор v3 (розмір 3, значення 5):");
+            v3.Output();
+
+            // Тестування введення
+            Console.WriteLine("\nТестування введення:");
+            VectorShort v4 = new VectorShort(3);
+            v4.Input();
+            Console.WriteLine("Вектор v4 після введення:");
+            v4.Output();
+
+            // Тестування присвоєння значення
+            Console.WriteLine("\nТестування присвоєння значення:");
+            v4.AssignValue(10);
+            Console.WriteLine("Вектор v4 після присвоєння значення 10:");
+            v4.Output();
+
+            // Тестування кількості векторів
+            Console.WriteLine("\nТестування кількості векторів:");
+            Console.WriteLine($"Кількість векторів: {VectorShort.GetVectorCount()}");
+
+            // Тестування властивостей
+            Console.WriteLine("\nТестування властивостей:");
+            Console.WriteLine($"Розмірність v4: {v4.Size}");
+            v4.CodeError = 5;
+            Console.WriteLine($"Код помилки v4: {v4.CodeError}");
+
+            // Тестування індексатора
+            Console.WriteLine("\nТестування індексатора:");
+            Console.WriteLine($"v4[1]: {v4[1]}");
+            Console.WriteLine($"v4[10]: {v4[10]} (неправильний індекс)");
+            Console.WriteLine($"Код помилки після неправильного індексу: {v4.CodeError}");
+
+            // Тестування унарних операцій
+            Console.WriteLine("\nТестування унарних операцій:");
+            v3++;
+            Console.WriteLine("Вектор v3 після ++:");
+            v3.Output();
+
+            v3--;
+            Console.WriteLine("Вектор v3 після --:");
+            v3.Output();
+
+            Console.WriteLine("Перевірка true/false для v3:");
+            if (v3)
+                Console.WriteLine("Усі елементи ненульові");
+            else
+                Console.WriteLine("Є нульові елементи");
+
+            Console.WriteLine($"Операція ! для v3: {!v3}");
+            VectorShort v5 = ~v3;
+            Console.WriteLine("Вектор v5 після побітового ~:");
+            v5.Output();
+
+            // Тестування бінарних арифметичних операцій
+            Console.WriteLine("\nТестування бінарних арифметичних операцій:");
+            VectorShort v6 = new VectorShort(3, 2);
+            VectorShort v7 = new VectorShort(2, 3);
+            Console.WriteLine("Вектор v6:");
+            v6.Output();
+            Console.WriteLine("Вектор v7:");
+            v7.Output();
+
+            VectorShort sum = v6 + v7;
+            Console.WriteLine("v6 + v7:");
+            sum.Output();
+
+            VectorShort sumScalar = v6 + (short)5;
+            Console.WriteLine("v6 + 5:");
+            sumScalar.Output();
+
+            VectorShort diff = v6 - v7;
+            Console.WriteLine("v6 - v7:");
+            diff.Output();
+
+            VectorShort diffScalar = v6 - (short)1;
+            Console.WriteLine("v6 - 1:");
+            diffScalar.Output();
+
+            VectorShort prod = v6 * v7;
+            Console.WriteLine("v6 * v7:");
+            prod.Output();
+
+            VectorShort prodScalar = v6 * (short)2;
+            Console.WriteLine("v6 * 2:");
+            prodScalar.Output();
+
+            VectorShort div = v6 / v7;
+            Console.WriteLine("v6 / v7:");
+            div.Output();
+
+            VectorShort divScalar = v6 / (ushort)2;
+            Console.WriteLine("v6 / 2:");
+            divScalar.Output();
+
+            VectorShort mod = v6 % v7;
+            Console.WriteLine("v6 % v7:");
+            mod.Output();
+
+            VectorShort modScalar = v6 % (short)3;
+            Console.WriteLine("v6 % 3:");
+            modScalar.Output();
+
+            // Тестування побітових операцій
+            Console.WriteLine("\nТестування побітових операцій:");
+            VectorShort bitOr = v6 | v7;
+            Console.WriteLine("v6 | v7:");
+            bitOr.Output();
+
+            VectorShort bitOrScalar = v6 | (short)1;
+            Console.WriteLine("v6 | 1:");
+            bitOrScalar.Output();
+
+            VectorShort bitXor = v6 ^ v7;
+            Console.WriteLine("v6 ^ v7:");
+            bitXor.Output();
+
+            VectorShort bitXorScalar = v6 ^ (short)1;
+            Console.WriteLine("v6 ^ 1:");
+            bitXorScalar.Output();
+
+            VectorShort bitAnd = v6 & v7;
+            Console.WriteLine("v6 & v7:");
+            bitAnd.Output();
+
+            VectorShort bitAndScalar = v6 & (short)1;
+            Console.WriteLine("v6 & 1:");
+            bitAndScalar.Output();
+
+            VectorShort bitShiftRight = v6 >> v7;
+            Console.WriteLine("v6 >> v7:");
+            bitShiftRight.Output();
+
+            VectorShort bitShiftRightScalar = v6 >> (ushort)1;
+            Console.WriteLine("v6 >> 1:");
+            bitShiftRightScalar.Output();
+
+            VectorShort bitShiftLeft = v6 << v7;
+            Console.WriteLine("v6 << v7:");
+            bitShiftLeft.Output();
+
+            VectorShort bitShiftLeftScalar = v6 << (ushort)1;
+            Console.WriteLine("v6 << 1:");
+            bitShiftLeftScalar.Output();
+
+            // Тестування операцій порівняння
+            Console.WriteLine("\nТестування операцій порівняння:");
+            Console.WriteLine($"v6 == v7: {v6 == v7}");
+            Console.WriteLine($"v6 != v7: {v6 != v7}");
+            Console.WriteLine($"v6 > v7: {v6 > v7}");
+            Console.WriteLine($"v6 >= v7: {v6 >= v7}");
+            Console.WriteLine($"v6 < v7: {v6 < v7}");
+            Console.WriteLine($"v6 <= v7: {v6 <= v7}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка: {ex.Message}");
+        }
+    }
+}
